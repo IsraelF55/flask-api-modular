@@ -24,10 +24,10 @@ def find_n_neighbours(df, n):
 
 # rutas
 
-
-@app.route('/recomendations/<string:user>', methods=['GET'])
-def recomendations(user):
-    print("\n\n estoy en recomendations 25", user, "\n\n")
+# Devovler 6 juegos como maximo
+@app.route('/recomendations/<string:user>/<int:games>', methods=['GET'])
+def recomendations(user, games):
+    print("\n\n estoy en recomendations 25", user, games, "\n\n")
     # Inicializacion y promediación
     data = db.ratings.find({})
     Ratings = pd.DataFrame(list(data))
@@ -69,7 +69,7 @@ def recomendations(user):
     # print('\nsimilarity_with_user\n', similarity_with_user)
 
     # Top 3 vecinos para cada usuario dado por el argumento
-    sim_user_3_u = find_n_neighbours(similarity_with_game, 3)
+    sim_user_3_u = find_n_neighbours(similarity_with_game, 2)
     # print('\nsim_user_3_u\n', sim_user_3_u)
     # Top 3 vecinos para cada juego dado por el argumento
     # sim_user_3_g = find_n_neighbours(similarity_with_game, 3)
@@ -92,8 +92,7 @@ def recomendations(user):
         l = ','.join(d.values)
         Game_seen_by_similar_users = l.split(',')
         Games_under_consideration = list(set(Game_seen_by_similar_users)-set(list(map(str, Game_seen_by_user))))
-        print('\n\n\n Games_under_consideration. Debe ser numerico \n',
-              Games_under_consideration)
+        print('\n\n\n Games_under_consideration. Debe ser numerico \n', Games_under_consideration)
         Games_under_consideration = list(map(int, Games_under_consideration))
         score = []
         # print('\n\n\n **Games_under_consideration** \n', Games_under_consideration)
@@ -117,18 +116,17 @@ def recomendations(user):
         data = pd.DataFrame(
             {'game': Games_under_consideration, 'score': score})
         # Aqui decidimos cuantos juegos recomendar
+        print('\n\n\n **data** \n', data)
+        print('\n\n\n **games** \n', games)
         top_recomendations = data.sort_values(
-            by='score', ascending=False).head(2)
+            by='score', ascending=False).head(games)
+        print('\n\n\n **top_recomendations** \n', top_recomendations)
+        # print('\n\n\n **games** \n', games)
         # print('\n\n\n top 5 pd- \n\n', top_recomendations)
         recomendations_n_6 = top_recomendations['game'].values.tolist()
         return recomendations_n_6
 
-    # esta es la ultima parte de la respuesta de la API: Llama a la funcion y entrega el resultado
-    # siempre poner un user tipo String
-    # actualUser = request.args.get('user')
-    # actualUser = request.args.get('618e7e4e265450092372958f')
-    # print('\n\n\n actualUser --- \n', actualUser)
-    # recomendacionFinal = recomendation_kubnn( actualUser )
+    # esta es la ultima parte de la respuesta de la API: Llama a la funcion y entrega el resultado    
     print('\n\n\n Hola, estoy en 121--- \n')
     recomendacionFinal = recomendation_kubnn(user)
     print('\n\n\n Hola, estoy en 123--- \n')
